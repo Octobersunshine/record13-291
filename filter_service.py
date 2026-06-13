@@ -96,21 +96,25 @@ def _build_mask(df: pd.DataFrame, cond: dict[str, Any]) -> pd.Series:
     val = cond.get("value")
 
     if op == "eq":
-        return series == val
+        if pd.isna(val):
+            return series.isna()
+        return (series == val).fillna(False)
     if op == "neq":
-        return series != val
+        if pd.isna(val):
+            return series.notna()
+        return (series != val).fillna(False)
     if op == "gt":
-        return series > val
+        return (series > val).fillna(False)
     if op == "gte":
-        return series >= val
+        return (series >= val).fillna(False)
     if op == "lt":
-        return series < val
+        return (series < val).fillna(False)
     if op == "lte":
-        return series <= val
+        return (series <= val).fillna(False)
     if op == "in":
-        return series.isin(val)
+        return series.isin(val).fillna(False)
     if op == "not_in":
-        return ~series.isin(val)
+        return (~series.isin(val)).fillna(False)
     if op == "contains":
         return series.astype(str).str.contains(str(val), na=False)
     if op == "not_contains":
@@ -121,10 +125,10 @@ def _build_mask(df: pd.DataFrame, cond: dict[str, Any]) -> pd.Series:
         return series.astype(str).str.endswith(str(val), na=False)
     if op == "between":
         lo, hi = val
-        return series.between(lo, hi)
+        return series.between(lo, hi).fillna(False)
     if op == "not_between":
         lo, hi = val
-        return ~series.between(lo, hi)
+        return (~series.between(lo, hi)).fillna(False)
     if op == "is_null":
         return series.isna()
     if op == "is_not_null":
